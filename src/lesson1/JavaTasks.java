@@ -2,6 +2,10 @@ package lesson1;
 
 import kotlin.NotImplementedError;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
+
 @SuppressWarnings("unused")
 public class JavaTasks {
     /**
@@ -35,7 +39,100 @@ public class JavaTasks {
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
     static public void sortTimes(String inputName, String outputName) {
-        throw new NotImplementedError();
+        Pattern reg = Pattern.compile("\\d{2}:\\d{2}:\\d{2}\\sAM|\\d{2}:\\d{2}:\\d{2}\\sPM");
+        ArrayList<String> listAM = new ArrayList<>();
+        ArrayList<String> listPM = new ArrayList<>();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(inputName));
+            String s;
+            while ((s = reader.readLine()) != null) {
+                if (!s.matches(String.valueOf(reg))) throw new Exception();
+                if (s.contains("AM")) {
+                    listAM.add(s);
+                } else {
+                    listPM.add(s);
+                }
+            }
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String[] resAM = new String[listAM.size()];
+        for (int i = 0; i < resAM.length; i++) {
+            resAM[i] = listAM.get(i);
+        }
+        mySortTime(resAM);
+
+        String[] resPM = new String[listPM.size()];
+        for (int i = 0; i < resPM.length; i++) {
+            resPM[i] = listPM.get(i);
+        }
+        mySortTime(resPM);
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputName));
+            for (String s : resAM) {
+                writer.write(s + "\n");
+            }
+            for (String s : resPM) {
+                writer.write(s + "\n");
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    static public void mySortTime(String[] arr) {
+        boolean end = false;
+        while (!end) {
+            end = true;
+            for (int i = 0; i < arr.length - 1; i++) {
+                if ((Integer.parseInt(arr[i].substring(0, 2)) != 12) && (Integer.parseInt(arr[i + 1].substring(0, 2)) != 12)) {
+                    if ((Integer.parseInt(arr[i].substring(0, 2)) > (Integer.parseInt(arr[i + 1].substring(0, 2))))) {
+                        String sub = arr[i];
+                        arr[i] = arr[i + 1];
+                        arr[i + 1] = sub;
+                        end = false;
+                    } else if (Integer.parseInt(arr[i].substring(0, 2)) == (Integer.parseInt(arr[i + 1].substring(0, 2)))) {
+                        if (Integer.parseInt(arr[i].substring(3, 5)) > (Integer.parseInt(arr[i + 1].substring(3, 5)))) {
+                            String sub = arr[i];
+                            arr[i] = arr[i + 1];
+                            arr[i + 1] = sub;
+                            end = false;
+                        } else if (Integer.parseInt(arr[i].substring(3, 5)) == (Integer.parseInt(arr[i + 1].substring(3, 5)))) {
+                            if (Integer.parseInt(arr[i].substring(6, 8)) > (Integer.parseInt(arr[i + 1].substring(6, 8)))) {
+                                String sub = arr[i];
+                                arr[i] = arr[i + 1];
+                                arr[i + 1] = sub;
+                                end = false;
+                            }
+                        }
+                    }
+                } else {
+                    if (Integer.parseInt(arr[i].substring(0, 2)) == (Integer.parseInt(arr[i + 1].substring(0, 2)))) {
+                        if (Integer.parseInt(arr[i].substring(3, 5)) > (Integer.parseInt(arr[i + 1].substring(3, 5)))) {
+                            String sub = arr[i];
+                            arr[i] = arr[i + 1];
+                            arr[i + 1] = sub;
+                            end = false;
+                        } else if (Integer.parseInt(arr[i].substring(3, 5)) == (Integer.parseInt(arr[i + 1].substring(3, 5)))) {
+                            if (Integer.parseInt(arr[i].substring(6, 8)) > (Integer.parseInt(arr[i + 1].substring(6, 8)))) {
+                                String sub = arr[i];
+                                arr[i] = arr[i + 1];
+                                arr[i + 1] = sub;
+                                end = false;
+                            }
+                        }
+                    } else if (Integer.parseInt(arr[i + 1].substring(0, 2)) == 12) {
+                        String sub = arr[i];
+                        arr[i] = arr[i + 1];
+                        arr[i + 1] = sub;
+                        end = false;
+                    }
+                }
+            }
+        }
     }
 
     /**
