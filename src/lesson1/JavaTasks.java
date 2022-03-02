@@ -163,7 +163,17 @@ public class JavaTasks {
      */
     static public void sortAddresses(String inputName, String outputName) {
         Pattern reg = Pattern.compile("[а-яА-Я]*\\s[а-яА-Я]*\\s-\\s.*\\s\\d*");// Для обнаружения неверного формата
-        SortedMap<String, String> mapForWrite = new TreeMap<>(); // Создаем Мар сортирующийся по ключу
+        SortedMap<String, String> mapForWrite = new TreeMap<>((o1, o2) -> {
+            String keyStr = o1.split(" ")[0];
+            String keyStr2 = o2.split(" ")[0];
+            if (keyStr.equals(keyStr2)) {
+                Integer keyInt = Integer.parseInt(o1.split(" ")[1]);
+                Integer keyInt2 = Integer.parseInt(o2.split(" ")[1]);
+                return keyInt.compareTo(keyInt2);
+            } else {
+                return o1.compareTo(o2);
+            }
+        }); // Создаем Мар сортирующийся по ключу по названию и по номеру
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(inputName));
@@ -303,29 +313,42 @@ public class JavaTasks {
      * Задан отсортированный массив first и второй массив second,
      * первые first.size ячеек которого содержат null, а остальные ячейки также отсортированы.
      * Соединить оба массива в массиве second так, чтобы он оказался отсортирован. Пример:
+     *if (second[j] != null) {                // Проверяем что значение из второго массива не null
+     *                     int res = t.compareTo(second[j]);   // Если результат сравнения 1 то значение из первого массива больше
+     *                     if (res > 0) {                      // т.к. массивы отсортированны значение второго массива будет
+     *                         second[ind] = second[j];        // самым минимумом из обоих запишем его в начало и перезапишем на null
+     *                         second[j] = null;
+     *                         ind++;
+     *                     } else {
+     *                         second[ind] = t;                // Если результат сравнения 0 или -1 то мы просто записываем значение
+     *                         ind++;                          // первого массива вместо null
+     *                         break;
+     *                     }
+     *                 }
      *
      * first = [4 9 15 20 28]
+     *                            1    3  4 9 13 18 23
      * second = [null null null null null 1 3 9 13 18 23]
-     *
      * Результат: second = [1 3 4 9 9 13 15 20 23 28]
      */
     static <T extends Comparable<T>> void mergeArrays(T[] first, T[] second) {
         int ind = 0;        // Переменная для контроля записи значений в итоговый массив
         for (T t : first) {                             // Цикл для прохода по первому массиву
-            for (int j = ind; j < second.length; j++) {  // Цикл для прохода по второму массиву
-                if (second[j] != null) {                // Проверяем что значение из второго массива не null
-                    int res = t.compareTo(second[j]);   // Если результат сравнения 1 то значение из первого массива больше
-                    if (res > 0) {                      // т.к. массивы отсортированны значение второго массива будет
-                        second[ind] = second[j];        // самым минимумом из обоих запишем его в начало и перезапишем на null
-                        second[j] = null;
-                        ind++;
+            for (int j = 0; j < second.length; j++) {  // Цикл для прохода по второму массиву
+                if (second[j] != null) {
+                    int res = t.compareTo(second[j]);     // Если число из первого массива больше перезаписываем второй массив на один
+                    if (res >= 0) {                       // влево
+                        second[j - 1] = second[j];
+                        second[j] = t;
                     } else {
-                        second[ind] = t;                // Если результат сравнения 0 или -1 то мы просто записываем значение
-                        ind++;                          // первого массива вместо null
+                        if (second[j - 1] == null) {
+                            second[j - 1] = t;
+                        }
                         break;
                     }
                 }
             }
         }
+//        System.out.println(Arrays.toString(second));
     }
 }
