@@ -349,6 +349,5 @@ public class JavaTasks {
                 }
             }
         }
-//        System.out.println(Arrays.toString(second));
     }
 }
