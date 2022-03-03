@@ -40,98 +40,50 @@ public class JavaTasks {
      */
     static public void sortTimes(String inputName, String outputName) {
         Pattern reg = Pattern.compile("\\d{2}:\\d{2}:\\d{2}\\sAM|\\d{2}:\\d{2}:\\d{2}\\sPM");
-        ArrayList<String> listAM = new ArrayList<>();                                       // Создаем 2 листа чтобы разделить сразу АМ и РМ
+        ArrayList<String> listAM = new ArrayList<>();                   // Создаем 2 листа чтобы разделить сразу АМ и РМ
         ArrayList<String> listPM = new ArrayList<>();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(inputName));
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputName))) {
             String s;
             while ((s = reader.readLine()) != null) {
-                if (!s.matches(String.valueOf(reg))) throw new Exception();
+                if (!s.matches(String.valueOf(reg))) throw new IOException();
                 if (s.contains("AM")) {
-                    listAM.add(s);
-                } else {                                            // если строка содержит АМ добавляем в лист АМ
-                    listPM.add(s);
-                }
-            }
-            reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        String[] resAM = new String[listAM.size()];                 // Создаем массив чтобы отсортировать для АМ и РМ и отправляем на сортировку
-        for (int i = 0; i < resAM.length; i++) {
-            resAM[i] = listAM.get(i);
-        }
-        mySortTime(resAM);
-
-        String[] resPM = new String[listPM.size()];
-        for (int i = 0; i < resPM.length; i++) {
-            resPM[i] = listPM.get(i);
-        }
-        mySortTime(resPM);
-
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outputName));
-            for (String s : resAM) {
-                writer.write(s + "\n");
-            }                                   // Записываем сначала отсортированный АМ потом РМ
-            for (String s : resPM) {
-                writer.write(s + "\n");
-            }
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    static public void mySortTime(String[] arr) { // Сортировка
-        boolean end = false;
-        while (!end) {     // Исаользуем пузырьковую сортировку сравниваем отдельно часы потом минуты и секунды
-            end = true;
-            for (int i = 0; i < arr.length - 1; i++) {
-                if ((Integer.parseInt(arr[i].substring(0, 2)) != 12) && (Integer.parseInt(arr[i + 1].substring(0, 2)) != 12)) { // если часы не равны 12 то
-                    if ((Integer.parseInt(arr[i].substring(0, 2)) > (Integer.parseInt(arr[i + 1].substring(0, 2))))) {      // сравниваем часы минуты секунды
-                        String sub = arr[i];
-                        arr[i] = arr[i + 1];
-                        arr[i + 1] = sub;
-                        end = false;
-                    } else if (Integer.parseInt(arr[i].substring(0, 2)) == (Integer.parseInt(arr[i + 1].substring(0, 2)))) {
-                        if (Integer.parseInt(arr[i].substring(3, 5)) > (Integer.parseInt(arr[i + 1].substring(3, 5)))) {
-                            String sub = arr[i];
-                            arr[i] = arr[i + 1];
-                            arr[i + 1] = sub;
-                            end = false;
-                        } else if (Integer.parseInt(arr[i].substring(3, 5)) == (Integer.parseInt(arr[i + 1].substring(3, 5)))) {
-                            if (Integer.parseInt(arr[i].substring(6, 8)) > (Integer.parseInt(arr[i + 1].substring(6, 8)))) {
-                                String sub = arr[i];
-                                arr[i] = arr[i + 1];
-                                arr[i + 1] = sub;
-                                end = false;
-                            }
-                        }
+                    if (s.split(":")[0].equals("12")) {
+                        listAM.add(s.replaceFirst("12", "00"));
+                    } else {             // если строка содержит АМ добавляем в лист АМ и меняем 12 на 00 для сортировки
+                        listAM.add(s);
                     }
                 } else {
-                    if (Integer.parseInt(arr[i].substring(0, 2)) == (Integer.parseInt(arr[i + 1].substring(0, 2)))) { // если обе 12 то сравниваем минуты секунды
-                        if (Integer.parseInt(arr[i].substring(3, 5)) > (Integer.parseInt(arr[i + 1].substring(3, 5)))) {
-                            String sub = arr[i];
-                            arr[i] = arr[i + 1];
-                            arr[i + 1] = sub;
-                            end = false;
-                        } else if (Integer.parseInt(arr[i].substring(3, 5)) == (Integer.parseInt(arr[i + 1].substring(3, 5)))) {
-                            if (Integer.parseInt(arr[i].substring(6, 8)) > (Integer.parseInt(arr[i + 1].substring(6, 8)))) {
-                                String sub = arr[i];
-                                arr[i] = arr[i + 1];
-                                arr[i + 1] = sub;
-                                end = false;
-                            }
-                        }
-                    } else if (Integer.parseInt(arr[i + 1].substring(0, 2)) == 12) { // если только одна 12 то ее пишем вперед
-                        String sub = arr[i];
-                        arr[i] = arr[i + 1];
-                        arr[i + 1] = sub;
-                        end = false;
+                    if (s.split(":")[0].equals("12")) {
+                        listPM.add(s.replaceFirst("12", "00"));
+                    } else {            // если строка содержит РМ добавляем в лист АМ и меняем 12 на 00 для сортировки
+                        listPM.add(s);
                     }
                 }
             }
+        }  catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Collections.sort(listAM);
+        Collections.sort(listPM);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputName))) {
+            for (String s : listAM) {
+                if (s.split(":")[0].equals("00")) {
+                    writer.write(s.replaceFirst("00", "12") + "\n");
+                } else {
+                    writer.write(s + "\n");
+                }
+            }                   // Записываем сначала отсортированный АМ потом РМ и меняем 00 на 12 обратно
+            for (String s : listPM) {
+                if (s.split(":")[0].equals("00")) {
+                    writer.write(s.replaceFirst("00", "12") + "\n");
+                } else {
+                    writer.write(s + "\n");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -175,8 +127,7 @@ public class JavaTasks {
             }
         }); // Создаем Мар сортирующийся по ключу по названию и по номеру
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(inputName));
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputName))) {
             String s;
             while ((s = reader.readLine()) != null) {
                 if (!s.matches(String.valueOf(reg))) throw new IOException(); // Если не соответствует формату выбрасываем любое исключение
@@ -195,18 +146,15 @@ public class JavaTasks {
                                                                                             // строку в итоговую мапу отрежем ненужную запятую
                 }
             }
-            reader.close();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
 
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outputName));
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputName))) {
             for (Map.Entry<String, String> entry : mapForWrite.entrySet()) {
                 writer.write(entry.getKey() + " - " + entry.getValue() + "\n"); // Запишем в файл ключ и значение через тире
             }
-            writer.close();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
@@ -243,30 +191,22 @@ public class JavaTasks {
      */
     static public void sortTemperatures(String inputName, String outputName) {
         ArrayList<Double> listTemp = new ArrayList<>(); // Создаем лист для добавления значений
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(inputName));
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputName))) {
             String s;
             while ((s = reader.readLine()) != null) {
                 Double d = Double.parseDouble(s);
                 listTemp.add(d);                    // Преобразуем каждую строку в Double и добавляем в лист
             }
-            reader.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
-        double[] wrTemp = new double[listTemp.size()];
-        for (int i = 0; i < listTemp.size(); i++) {
-            wrTemp[i] = listTemp.get(i);            // Записываем все значения в массив чтобы отсортировать
-        }
-        Arrays.sort(wrTemp);                        // Сортируем
+        Collections.sort(listTemp);                        // Сортируем
 
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outputName));
-            for (double d : wrTemp) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputName))) {
+            for (double d : listTemp) {
                 writer.write(d + "\n");         // Записываем в файл
             }
-            writer.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -313,21 +253,7 @@ public class JavaTasks {
      * Задан отсортированный массив first и второй массив second,
      * первые first.size ячеек которого содержат null, а остальные ячейки также отсортированы.
      * Соединить оба массива в массиве second так, чтобы он оказался отсортирован. Пример:
-     *if (second[j] != null) {                // Проверяем что значение из второго массива не null
-     *                     int res = t.compareTo(second[j]);   // Если результат сравнения 1 то значение из первого массива больше
-     *                     if (res > 0) {                      // т.к. массивы отсортированны значение второго массива будет
-     *                         second[ind] = second[j];        // самым минимумом из обоих запишем его в начало и перезапишем на null
-     *                         second[j] = null;
-     *                         ind++;
-     *                     } else {
-     *                         second[ind] = t;                // Если результат сравнения 0 или -1 то мы просто записываем значение
-     *                         ind++;                          // первого массива вместо null
-     *                         break;
-     *                     }
-     *                 }
-     *
      * first = [4 9 15 20 28]
-     *                            1    3  4 9 13 18 23
      * second = [null null null null null 1 3 9 13 18 23]
      * Результат: second = [1 3 4 9 9 13 15 20 23 28]
      */
