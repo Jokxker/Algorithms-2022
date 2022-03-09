@@ -40,8 +40,8 @@ public class JavaTasks {
      */
     static public void sortTimes(String inputName, String outputName) {
         Pattern reg = Pattern.compile("\\d{2}:\\d{2}:\\d{2}\\sAM|\\d{2}:\\d{2}:\\d{2}\\sPM");
-        ArrayList<String> listAM = new ArrayList<>();                   // Создаем 2 листа чтобы разделить сразу АМ и РМ
-        ArrayList<String> listPM = new ArrayList<>();
+        List<String> listAM = new ArrayList<>();                   // Создаем 2 листа чтобы разделить сразу АМ и РМ
+        List<String> listPM = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(inputName))) {
             String s;
             while ((s = reader.readLine()) != null) {
@@ -190,7 +190,7 @@ public class JavaTasks {
      * 121.3
      */
     static public void sortTemperatures(String inputName, String outputName) {
-        ArrayList<Double> listTemp = new ArrayList<>(); // Создаем лист для добавления значений
+        List<Double> listTemp = new ArrayList<>(); // Создаем лист для добавления значений
         try (BufferedReader reader = new BufferedReader(new FileReader(inputName))) {
             String s;
             while ((s = reader.readLine()) != null) {
@@ -258,22 +258,28 @@ public class JavaTasks {
      * Результат: second = [1 3 4 9 9 13 15 20 23 28]
      */
     static <T extends Comparable<T>> void mergeArrays(T[] first, T[] second) {
-        int ind = 0;        // Переменная для контроля записи значений в итоговый массив
-        for (T t : first) {                             // Цикл для прохода по первому массиву
-            for (int j = 0; j < second.length; j++) {  // Цикл для прохода по второму массиву
-                if (second[j] != null) {
-                    int res = t.compareTo(second[j]);     // Если число из первого массива больше перезаписываем второй массив на один
-                    if (res >= 0) {                       // влево
-                        second[j - 1] = second[j];
-                        second[j] = t;
-                    } else {
-                        if (second[j - 1] == null) {
-                            second[j - 1] = t;
-                        }
-                        break;
-                    }
-                }
+        int indNull = 0;
+        int indFirst = 0;
+        int indSecond = first.length;
+        while (indSecond < second.length) {
+            int cmp = first[indFirst].compareTo(second[indSecond]);
+            if (cmp < 0) {
+                second[indNull] = first[indFirst];
+                indFirst++;
+                indNull++;
+            } else if (cmp > 0) {
+                second[indNull] = second[indSecond];
+                indSecond++;
+                indNull++;
+            } else {
+                second[indNull] = first[indFirst];
+                indFirst++;
+                indNull++;
+                second[indNull] = second[indSecond];
+                indSecond++;
+                indNull++;
             }
+            if (indFirst == first.length) break;
         }
     }
 }
